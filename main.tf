@@ -85,11 +85,12 @@ resource "hyperv_machine_instance" "k3s-cluster" {
 	# wait_for_ips = false
   }
 
-  dvd_drives {
-    controller_number = "0"
-    controller_location = "1"
-    path = "c:/Users/laure/Downloads/alpine-standard-3.15.4-x86_64.iso"
-  }
+# As the provider does not allow you to specify boot order for newly spun up instances, the below has been commented out to prevent booting from the .ISO file itself.
+  # dvd_drives {
+  #   controller_number = "0"
+  #   controller_location = "1"
+  #   path = "c:/Users/laure/Downloads/alpine-standard-3.15.4-x86_64.iso"
+  # }
 
   vm_firmware {
     enable_secure_boot = "Off"
