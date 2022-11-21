@@ -21,7 +21,7 @@ provider "hyperv" {
   cert_path       = ""
   key_path        = ""
   script_path     = "C:/Temp/terraform_%RAND%.cmd"
-  timeout         = "30s"
+  timeout         = "60s"
 }
 
 #Create Virtual Switch
@@ -45,12 +45,13 @@ resource "hyperv_network_switch" "k3s-cluster-net" {
 #Randomize list of Pokemon Names to be used for VM's
 resource "random_shuffle" "pokemon" {
   input = "${var.server_names}"
+  keepers = {}
 }
 
 #Create Virtual Machines
 resource "hyperv_machine_instance" "k3s-cluster" {
   count = var.server_count
-  name = "${random_shuffle.pokemon.result[count.index]} - k3s"
+  name = random_shuffle.pokemon.result[count.index]
   generation = 2
   automatic_critical_error_action = "Pause"
   automatic_critical_error_action_timeout = 30
@@ -109,9 +110,9 @@ resource "hyperv_vhd" "k3s-host-vhdx" {
 
 }
 
-output "VLAN-name" {
-  value = hyperv_network_switch.k3s-cluster-net.name
+output "VMs" {
+  value = ["${hyperv_machine_instance.k3s-cluster.*.name}"]
 }
-output "VLAN-name2" {
+output "VLAN" {
   value = var.switch_name
 }
