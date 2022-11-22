@@ -1,0 +1,14 @@
+---
+- hosts: all
+  tasks:
+  - name: Set hostname 
+    hostname:
+     name: "{{ inventory_hostname }}"
+
+  - name: update hostname
+    command: hostname -F /etc/hostname
+
+  - name: Join the Worker nodes to the cluster.
+    become: yes
+    shell: 
+      cmd: curl -sfL https://get.k3s.io | K3S_URL=https://myserver:6443 K3S_TOKEN=mynodetoken sh -
