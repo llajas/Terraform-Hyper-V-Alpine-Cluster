@@ -45,7 +45,6 @@ resource "hyperv_network_switch" "k3s-cluster-net" {
 #Randomize list of Pokemon Names to be used for VM's
 resource "random_shuffle" "pokemon" {
   input = "${var.server_names}"
-  keepers = {}
 }
 
 #Create Virtual Machines
@@ -77,21 +76,14 @@ resource "hyperv_machine_instance" "k3s-cluster" {
     controller_type = "Scsi"
     controller_number = "0"
     controller_location = "0"
-    path = "${hyperv_vhd.k3s-host-vhdx["${count.index}"].path}"
+    path = hyperv_vhd.k3s-host-vhdx["${count.index}"].path
   }
 
   network_adaptors {
 	name = "eth0"
-	switch_name  = "${hyperv_network_switch.k3s-cluster-net.name}"
+	switch_name  = hyperv_network_switch.k3s-cluster-net.name
 	# wait_for_ips = false
   }
-
-# As the provider does not allow you to specify boot order for newly spun up instances, the below has been commented out to prevent booting from the .ISO file itself.
-  # dvd_drives {
-  #   controller_number = "0"
-  #   controller_location = "1"
-  #   path = "c:/Users/laure/Downloads/alpine-standard-3.15.4-x86_64.iso"
-  # }
 
   vm_firmware {
     enable_secure_boot = "Off"
@@ -100,14 +92,41 @@ resource "hyperv_machine_instance" "k3s-cluster" {
     console_mode = "Default"
     pause_after_boot_failure = "On"
   }
+
+  vm_processor {
+    compatibility_for_migration_enabled               = false
+    compatibility_for_older_operating_systems_enabled = false
+    enable_host_resource_protection                   = false
+    expose_virtualization_extensions                  = false
+    hw_thread_count_per_core                          = 0
+    maximum                                           = 100
+    maximum_count_per_numa_node                       = 4
+    maximum_count_per_numa_socket                     = 1
+    relative_weight                                   = 100
+    reserve                                           = 0
+  }
 }
 
 #Create Disk for Each VM mirrored from base image
 resource "hyperv_vhd" "k3s-host-vhdx" {
   count = var.server_count
-  path   = "C:\\Users\\laure\\vms\\k3s\\vdisk\\${random_shuffle.pokemon.result[count.index]}\\k3s-hdd.vhdx"
-  source = "C:\\Users\\Public\\Documents\\Hyper-V\\Virtual hard disks\\Alpine_Linux_Base.vhdx"
+  path   = "C:\\VMs\\k3s\\vdisk\\${random_shuffle.pokemon.result[count.index]}\\k3s-hdd.vhdx"
+  source = "C:\\VMs\\base-image\\Alpine_Linux_Base.vhdx"
+}
 
+resource "null_resource" "ansible-inventory" {
+  count = var.server_count
+	triggers = {
+		mytest = timestamp()
+	}
+
+	provisioner "local-exec" {
+	    command = "echo ${hyperv_machine_instance.k3s-cluster[count.index].id}.local.lan ansible_host=${hyperv_machine_instance.k3s-cluster[count.index].network_adaptors.0.ip_addresses.0}>> 'ansible/inventory'"
+      }
+
+	depends_on = [ 
+			hyperv_machine_instance.k3s-cluster 
+			]
 }
 
 output "VMs" {
