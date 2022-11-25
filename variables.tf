@@ -44,3 +44,11 @@ variable "HYPERV_PORT" {
 variable "build_notes" {
   default = "Provisioned by Terraform"
 }
+variable "base_image_path" {
+  description = "Please specify the '.vhdx' file that will be cloned for all nodes"
+  type = string
+}
+variable "working_path" {
+  description = "Please specify the location used to store all created '.vhdx' files for all nodes"
+  type = string
+}
