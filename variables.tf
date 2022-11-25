@@ -3,8 +3,8 @@ variable "leader_server_count" {
   type        = number
 
   validation {
-    condition     = var.server_count >= 1 && var.server_count <= 27 && floor(var.server_count) == var.server_count
-    error_message = "Please choose a number between 1-27!"
+    condition     = var.leader_server_count >= 1 && var.leader_server_count <= 3 && floor(var.leader_server_count) == var.leader_server_count
+    error_message = "Please choose a number between 1-3!"
   }
 }
 variable "worker_server_count" {
@@ -12,7 +12,7 @@ variable "worker_server_count" {
   type        = number
 
   validation {
-    condition     = var.server_count >= 1 && var.server_count <= 27 && floor(var.server_count) == var.server_count
+    condition     = var.worker_server_count >= 1 && var.worker_server_count <= 27 && floor(var.worker_server_count) == var.worker_server_count
     error_message = "Please choose a number between 1-27!"
   }
 }
