@@ -184,17 +184,23 @@ resource "hyperv_vhd" "leader-vhdx" {
   source = var.base_image_path
 	}
 
-	provisioner "local-exec" {
-	    command = "echo ${hyperv_machine_instance.k3s-cluster[count.index].id}.k8s.lajas.tech ansible_host=${hyperv_machine_instance.k3s-cluster[count.index].network_adaptors.0.ip_addresses.0}>> 'ansible/inventory'"
-      }
+# resource "null_resource" "ansible-inventory" {
+#   count = var.leader_server_count+var.worker_server_count
+# 	triggers = {
+# 		mytest = timestamp()
+# 	}
 
-	depends_on = [ 
-			hyperv_machine_instance.k3s-cluster 
-			]
-}
+# 	provisioner "local-exec" {
+# 	    command = "echo ${hyperv_machine_instance.k8s-*[count.index].id}.k8s.lajas.tech ansible_host=${hyperv_machine_instance.k8s-*[count.index].network_adaptors.0.ip_addresses.0}>> 'ansible/inventory'"
+#       }
 
-output "VMs" {
-  value = ["${hyperv_machine_instance.k3s-cluster.*.name}"]
+# 	depends_on = [ 
+# 			hyperv_machine_instance.k8s-worker
+# 			]
+# }
+
+output "Workers & Leaders" {
+  value = ["${hyperv_machine_instance.k8s-worker.*.name}", "${hyperv_machine_instance.k8s-leader.*.name}"]
 }
 output "VLAN" {
   value = var.switch_name
