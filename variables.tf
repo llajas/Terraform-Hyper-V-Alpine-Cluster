@@ -22,7 +22,6 @@ variable "switch_name" {
 }
 variable "network_adapter" {
   type = string
-  default = "Ethernet"
 }
 variable "HYPERV_USERNAME" {
   description = "Enter the local (Non-Domain Joined) Windows account"
