@@ -25,7 +25,7 @@ provider "hyperv" {
 }
 
 #Create Virtual Switch
-resource "hyperv_network_switch" "k3s-cluster-net" {
+resource "hyperv_network_switch" "k8s-cluster-net" {
   name = var.switch_name
   notes = var.build_notes
   allow_management_os = true
