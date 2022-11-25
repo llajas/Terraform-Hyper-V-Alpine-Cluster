@@ -82,7 +82,6 @@ resource "hyperv_machine_instance" "k3s-leader" {
   network_adaptors {
 	name = "eth0"
 	switch_name  = hyperv_network_switch.k3s-cluster-net.name
-	# wait_for_ips = false
   }
 
   vm_firmware {
