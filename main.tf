@@ -42,15 +42,15 @@ resource "hyperv_network_switch" "k8s-cluster-net" {
   default_queue_vrss_enabled = false
 }
 
-#Randomize list of Pokemon Names to be used for VM's
-resource "random_shuffle" "pokemon" {
-  input = "${var.server_names}"
+#Randomize list of Pokemon Region Names to be used for leaders
+resource "random_shuffle" "leader_names" {
+  input = "${var.leader_name_list}"
 }
 
 #Create Leader Node(s)
-resource "hyperv_machine_instance" "k3s-leader" {
+resource "hyperv_machine_instance" "k8s-leader" {
   count = var.leader_server_count
-  name = random_shuffle.pokemon.result[count.index]
+  name = random_shuffle.leader_names.result[count.index]
   generation = 2
   automatic_critical_error_action = "Pause"
   automatic_critical_error_action_timeout = 30
@@ -76,12 +76,12 @@ resource "hyperv_machine_instance" "k3s-leader" {
     controller_type = "Scsi"
     controller_number = "0"
     controller_location = "0"
-    path = hyperv_vhd.k3s-host-vhdx["${count.index}"].path
+    path = hyperv_vhd.worker-vhdx["${count.index}"].path
   }
 
   network_adaptors {
 	name = "eth0"
-	switch_name  = hyperv_network_switch.k3s-cluster-net.name
+	switch_name  = hyperv_network_switch.k8s-cluster-net.name
   }
 
   vm_firmware {
@@ -106,10 +106,15 @@ resource "hyperv_machine_instance" "k3s-leader" {
   }
 }
 
+#Randomize list of Starter Pokemon Names to be used for workers
+resource "random_shuffle" "worker_names" {
+  input = "${var.worker_name_list}"
+}
+
 #Create Worker Node(s)
-resource "hyperv_machine_instance" "k3s-worker" {
+resource "hyperv_machine_instance" "k8s-worker" {
   count = var.worker_server_count
-  name = random_shuffle.pokemon.result[count.index]
+  name = random_shuffle.worker_names.result[count.index]
   generation = 2
   automatic_critical_error_action = "Pause"
   automatic_critical_error_action_timeout = 30
@@ -135,13 +140,12 @@ resource "hyperv_machine_instance" "k3s-worker" {
     controller_type = "Scsi"
     controller_number = "0"
     controller_location = "0"
-    path = hyperv_vhd.k3s-host-vhdx["${count.index}"].path
+    path = hyperv_vhd.worker-vhdx["${count.index}"].path
   }
 
   network_adaptors {
 	name = "eth0"
-	switch_name  = hyperv_network_switch.k3s-cluster-net.name
-	# wait_for_ips = false
+	switch_name  = hyperv_network_switch.k8s-cluster-net.name
   }
 
   vm_firmware {
@@ -166,17 +170,18 @@ resource "hyperv_machine_instance" "k3s-worker" {
   }
 }
 
-#Create Disk for Each VM mirrored from base image
-resource "hyperv_vhd" "k3s-host-vhdx" {
-  count = var.server_count
-  path   = "C:\\VMs\\k3s\\vdisk\\${random_shuffle.pokemon.result[count.index]}\\k3s-hdd.vhdx"
-  source = "C:\\VMs\\base-image\\Alpine_Linux_Base.vhdx"
+#Create Disk for Each worker VM mirrored from base image
+resource "hyperv_vhd" "worker-vhdx" {
+  count = var.worker_server_count
+  path   = "${var.working_path}\\workers\\${random_shuffle.worker_names.result[count.index]}\\k8s-hdd.vhdx"
+  source = var.base_image_path
 }
 
-resource "null_resource" "ansible-inventory" {
-  count = var.server_count
-	triggers = {
-		mytest = timestamp()
+#Create Disk for Each leader mirrored from base image
+resource "hyperv_vhd" "leader-vhdx" {
+  count = var.leader_server_count
+  path   = "${var.working_path}\\leaders\\${random_shuffle.leader_names.result[count.index]}\\k8s-hdd.vhdx"
+  source = var.base_image_path
 	}
 
 	provisioner "local-exec" {
