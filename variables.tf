@@ -18,7 +18,7 @@ variable "worker_server_count" {
 }
 variable "switch_name" {
   type = string
-  default = "k3s DMZ"
+  default = "k8s DMZ"
 }
 variable "network_adapter" {
   description = "Please enter the name of the NIC to be bound/bridged to your virtual switch:"
