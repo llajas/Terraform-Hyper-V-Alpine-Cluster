@@ -21,6 +21,7 @@ variable "switch_name" {
   default = "k3s DMZ"
 }
 variable "network_adapter" {
+  description = "Please enter the name of the NIC to be bound/bridged to your virtual switch:"
   type = string
 }
 variable "HYPERV_USERNAME" {
