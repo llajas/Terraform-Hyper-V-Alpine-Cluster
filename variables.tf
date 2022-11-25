@@ -1,5 +1,14 @@
-variable "server_count" {
-  description = "How many instances should be created?"
+variable "leader_server_count" {
+  description = "How many leader instances should be created?"
+  type        = number
+
+  validation {
+    condition     = var.server_count >= 1 && var.server_count <= 27 && floor(var.server_count) == var.server_count
+    error_message = "Please choose a number between 1-27!"
+  }
+}
+variable "worker_server_count" {
+  description = "How many worker instances should be created?"
   type        = number
 
   validation {
