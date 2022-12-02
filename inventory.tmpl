@@ -1,0 +1,9 @@
+[leaders]
+${hostname_k8s_leader}
+
+[workers]
+${hostname_k8s_worker}
+
+[k8s_all:children]
+leaders
+workers

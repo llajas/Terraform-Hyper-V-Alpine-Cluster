@@ -182,25 +182,24 @@ resource "hyperv_vhd" "leader-vhdx" {
   count = var.leader_server_count
   path   = "${var.working_path}\\leaders\\${random_shuffle.leader_names.result[count.index]}\\k8s-hdd.vhdx"
   source = var.base_image_path
-	}
+}
 
-# resource "null_resource" "ansible-inventory" {
-#   count = var.leader_server_count+var.worker_server_count
-# 	triggers = {
-# 		mytest = timestamp()
-# 	}
+#Generate inventory file for Ansible
+resource "local_file" "ansible_inventory" {
+    depends_on = [
+      hyperv_machine_instance.k8s-leader,hyperv_machine_instance.k8s-worker
+    ]
+    content = templatefile("inventory.tmpl",
+    {
+      hostname_k8s_leader = "${join("\n", [for instance in hyperv_machine_instance.k8s-leader : join("", [instance.id, "${var.domain} ansible_host=", instance.network_adaptors.0.ip_addresses.0])] )}"
+      hostname_k8s_worker = "${join("\n", [for instance in hyperv_machine_instance.k8s-worker : join("", [instance.id, "${var.domain} ansible_host=", instance.network_adaptors.0.ip_addresses.0])] )}"
+    }
+  )
+  filename = "ansible/inventory"
+}
 
-# 	provisioner "local-exec" {
-# 	    command = "echo ${hyperv_machine_instance.k8s-*[count.index].id}.k8s.lajas.tech ansible_host=${hyperv_machine_instance.k8s-*[count.index].network_adaptors.0.ip_addresses.0}>> 'ansible/inventory'"
-#       }
-
-# 	depends_on = [ 
-# 			hyperv_machine_instance.k8s-worker
-# 			]
-# }
-
-output "Workers & Leaders" {
-  value = ["${hyperv_machine_instance.k8s-worker.*.name}", "${hyperv_machine_instance.k8s-leader.*.name}"]
+output "Nodes" {
+  value = ["${hyperv_machine_instance.k8s-leader.*.name}", "${hyperv_machine_instance.k8s-worker.*.name}"]
 }
 output "VLAN" {
   value = var.switch_name
