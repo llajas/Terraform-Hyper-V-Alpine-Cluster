@@ -52,3 +52,8 @@ variable "working_path" {
   description = "Please specify the location used to store all created '.vhdx' files for all nodes"
   type = string
 }
+variable "domain" {
+  description = "Please enter the domain that you would like to use for your cluster"
+  type = string
+  default = ".local"
+}
