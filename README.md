@@ -1,16 +1,21 @@
 # A Terraform Module for Hyper-V
-A Terraform module that leverages a custom Hyper-V provider (Provided by [taliesins/terraform-provider-hyperv](https://github.com/taliesins/terraform-provider-hyperv)) that will spin up-to 5 VM's that all run a base Alpine Linux image. Each VM will pull its name randomly from a pool of Puppy type Pokemon and label it accordingly. Additionally, a virtual switch bridged to the local host adapter is created using this module that will allow the VM's to connect to one another and reach out to DHCP on the LAN the Hyper-V host is running on. Each VM will have dynamic RAM that will adjust accordingly, starting at 512MB per instance and can be used for a k8s/k3s cluster via Ansible configuration.
+This is a custom Terraform module that is meant to create the standalone VM's meant for [llajas/homelab](https://github.com/llajas/homelab) prior to initial bootstrapping. It leverages a custom Hyper-V provider (Provided by [taliesins/terraform-provider-hyperv](https://github.com/taliesins/terraform-provider-hyperv)) and will create any amount of VM's your specify with a blank VHDX attached ready for PXE boot across two physical hosts
+
+The following is established when ran:
+1. Any number VM's of your choice across two hosts - VM's obtain their names from a pool of starter type Pokemon (Gen1-9).
+2. Virtual switches that are bridged externally to a host adapter of your choosing.
+3. Cloned VHDX files from a pre-existing file in a location that you specify.
+
+The networking is bridged to allow the VM's to connect to one another and reach out to the same DHCP server that the VLAN the Hyper-V host is running on and obtain PxE boot information where a customized Fedora install takes place based on the MAC address of the VM.
+ 
+ to being bootstrapping via PxE and then further configuration via Ansible. Dynamic RAM is enabled for the nodes, with 2048MB on boot (Less was tested and it was found that the PxE boot runs into issues during bootstraping)
 
 # Prerequisites
 
 First you'll want to expose your Hyper-V host if not on a domain - That can be done via the following instructions: https://github.com/taliesins/terraform-provider-hyperv#setting-up-server-for-provider-usage
 
-You'll need to have already created a base image for these images which can be specified under the 'hyperv_vhd.k3s-host-vhdx' resource group. Simply update this section with your '*.vhdx' image and this will replicate across all instances that you specify.
-
-Additionally, you can either update the 'dvd_drives' subgroup under 'hyperv_machine_instance.k3s-cluster' to point to a '*.iso' file to boot from, or comment it out entirely if a DVD drive isn't needed. In this case, this allows the image to load Alpine Linux into RAM prior to installing to the disk, or configure the disk to run in 'Data Disk Mode' (https://wiki.alpinelinux.org/wiki/Installation#Data_Disk_Mode)
-
-Check any other paths that may be different on your Hyper-V host and update accordingly!
+You'll also need to have already created a base VHDX image for your machines to clone from with expansion enabled.
 
 # To-Do
 
-Add more variables for disk and path options for more modularity.
+Pipe MAC addresses into the future 'metal.yml' file which is fed into the initial PxE container, allowing VM's to obtain custom bootstrap.
