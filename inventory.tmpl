@@ -1,9 +1,10 @@
-[leaders]
-${hostname_k8s_leader}
-
-[workers]
-${hostname_k8s_worker}
-
-[k8s_all:children]
-leaders
-workers
+metal:
+  children:
+    masters:
+      hosts:
+        metal0: {ansible_host: 10.137.0.10, mac: '${mac1}', disk: sda, network_interface: eth0}
+        metal1: {ansible_host: 10.137.0.11, mac: '${mac2}', disk: sda, network_interface: eth0}
+        metal2: {ansible_host: 10.137.0.12, mac: '${mac3}', disk: sda, network_interface: eth0}
+    workers:
+      hosts:
+        metal3: {ansible_host: 10.137.0.13, mac: '${mac0}', disk: sda, network_interface: eth0}
