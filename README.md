@@ -18,4 +18,5 @@ You'll also need to have already created a base VHDX image for your machines to 
 
 # To-Do
 
-Pipe MAC addresses into the future 'metal.yml' file which is fed into the initial PxE container, allowing VM's to obtain custom bootstrap.
+~~Pipe MAC addresses into the future 'metal.yml' file which is fed into the initial PxE container, allowing VM's to obtain custom bootstrap.~~ - Addresses are now obtained from the state file and parsed out correctly to be pulled by the Ansible setup.
+Break parts up into modules

@@ -219,23 +219,18 @@ resource "hyperv_vhd" "node-vhdx1" {
   source = var.base_image_path
 }
 
-# #Generate inventory file for Ansible
-# resource "local_file" "ansible_inventory" {
-#     depends_on = [
-#       hyperv_machine_instance.k8s-leader,hyperv_machine_instance.k8s-worker
-#     ]
-#     content = templatefile("inventory.tmpl",
-#     {
-#       hostname_k8s_leader = "${join("\n", [for instance in hyperv_machine_instance.k8s-leader : join("", [instance.id, "${var.domain} ansible_host=", instance.network_adaptors.0.ip_addresses.0])] )}"
-#       hostname_k8s_worker = "${join("\n", [for instance in hyperv_machine_instance.k8s-worker : join("", [instance.id, "${var.domain} ansible_host=", instance.network_adaptors.0.ip_addresses.0])] )}"
-#     }
-#   )
-#   filename = "ansible/inventory"
-# }
-
-# output "Nodes" {
-#   value = ["${hyperv_machine_instance.k8s-leader.*.name}", "${hyperv_machine_instance.k8s-worker.*.name}"]
-# }
-# output "VLAN" {
-#   value = var.switch_name
-# }
+#Generate inventory file for Ansible
+resource "local_file" "ansible_inventory" {
+    depends_on = [
+      hyperv_machine_instance.k8s-nodes0,hyperv_machine_instance.k8s-nodes1
+    ]
+    content = templatefile("inventory.tmpl",
+    {
+      mac0 = "${lower(replace(hyperv_machine_instance.k8s-nodes0.0.network_adaptors.0.static_mac_address, "/(..(?:))\\B/", "$0:"))}"
+      mac1 = "${lower(replace(hyperv_machine_instance.k8s-nodes0.1.network_adaptors.0.static_mac_address, "/(..(?:))\\B/", "$0:"))}"
+      mac2 = "${lower(replace(hyperv_machine_instance.k8s-nodes1.0.network_adaptors.0.static_mac_address, "/(..(?:))\\B/", "$0:"))}"
+      mac3 = "${lower(replace(hyperv_machine_instance.k8s-nodes1.1.network_adaptors.0.static_mac_address, "/(..(?:))\\B/", "$0:"))}"
+    }
+  )
+  filename = "prod.yml"
+}
