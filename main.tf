@@ -76,7 +76,7 @@ resource "hyperv_machine_instance" "k8s-leader" {
     controller_type = "Scsi"
     controller_number = "0"
     controller_location = "0"
-    path = hyperv_vhd.worker-vhdx["${count.index}"].path
+    path = hyperv_vhd.leader-vhdx["${count.index}"].path
   }
 
   network_adaptors {
